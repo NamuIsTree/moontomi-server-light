@@ -22,3 +22,16 @@
   - season 별 페이지
   - playlist - Discord 연동
   - push (kakao? mail?)
+
+---
+## DB Schema 변경 계획
+
+### album
+
+  - genres를 album_genre table로 이전
+    - genre를 JSON column으로 설정하면, genre category별 검색이 어렵다..
+
+### lecture
+
+  - rating을 avg query로 제공하기에는 가장 사용량이 많을 것으로 예상되기에, lecture table에 컬럼으로 추가
+    - comment가 추가될 때 업데이트

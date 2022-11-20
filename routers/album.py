@@ -10,12 +10,6 @@ router = APIRouter(
 )
 
 
-@router.get("/all")
-async def get_albums_all():
-    albums = session.query(Album).all()
-    return albums
-
-
 @router.get("/{album_id}")
 async def get_album(album_id: int):
     result = session.query(
