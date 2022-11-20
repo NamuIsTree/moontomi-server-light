@@ -19,11 +19,11 @@ async def root():
         <html>
             <body>
                 <a href="/docs">
-                    goto api docs page
+                    goto api swagger page
                 </a>
                 <br><br>
                 <a href="/redoc">
-                    goto api test page
+                    goto api document page
                 </a>
             </body>
         </html>
