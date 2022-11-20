@@ -1,0 +1,9 @@
+# properties
+properties.py
+
+# ignore directories
+static/
+.idea/
+
+# pycache
+**/__pycache__/**
