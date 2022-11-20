@@ -12,29 +12,29 @@ router = APIRouter(
 
 @router.get("/{album_id}")
 async def get_album(album_id: int):
-    result = session.query(
-        Album, Artist
+    result = dict(
+        session.query(
+            Album.album_id, Album.title, Artist.artist_id, Album.image_id, Album.genres, Album.tracks, Album.release
+        ).filter(
+            Album.artist_id == Artist.artist_id
+        ).filter(
+            Album.album_id == album_id
+        ).one()
+    )
+
+    genres = ast.literal_eval(result["genres"])
+    genres = session.query(
+        Genre.category, Genre.name
     ).filter(
-        Album.artist_id == Artist.artist_id
-    ).filter(
-        Album.album_id == album_id
-    ).one()
+        Genre.genre_id.in_(genres)
+    ).all()
 
-    album = result["Album"]
-    artist = result["Artist"]
+    tracks = ast.literal_eval(result["tracks"])
 
-    album_genres = ast.literal_eval(album.genres)
-    genres = session.query(Genre).filter(Genre.genre_id.in_(album_genres)).all()
+    result["genres"] = genres
+    result["tracks"] = tracks
 
-    return {
-        "album_id": album_id,
-        "title": album.title,
-        "artist": artist,
-        "image_id": album.image_id,
-        "genres": genres,
-        "tracks": ast.literal_eval(album.tracks),
-        "release": album.release
-    }
+    return result
 
 
 @router.post("/{album_id}")

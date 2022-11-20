@@ -18,6 +18,9 @@ async def search_lectures(page: int, page_size: int, sort_by: str, sort_option: 
     if sort_by not in ['rating', 'id']:
         return Response(status_code=400)
 
+    page = max(page, 1)
+    page_size = min(max(page_size, 1), 15)
+
     query = session.query(
         Lecture.lecture_id, Album.title, Album.image_id, Artist.name, Artist.nation
     ).filter(
