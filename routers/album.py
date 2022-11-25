@@ -1,10 +1,13 @@
 import ast
+import traceback
 
 from fastapi import APIRouter
+from pydantic import BaseModel
 from sqlalchemy import and_
+from sqlalchemy.exc import NoResultFound
 
 from config.database import session
-from config.models import Album, Genre, Artist
+from config.models import Album, Genre, Artist, AlbumDto, GenreDto, AlbumGenre
 
 router = APIRouter(
     prefix="/album",
@@ -12,29 +15,34 @@ router = APIRouter(
 )
 
 
+class AlbumCreationRequest(BaseModel):
+    album: AlbumDto
+    genres: list[GenreDto]
+
+
 @router.get("/{album_id}")
 async def get_album(album_id: int):
     result = dict(
         session.query(
-            Album.album_id, Album.title, Artist.artist_id, Album.image_id, Album.genres, Album.tracks, Album.release
+            Album.title, Album.image_id, Album.tracks, Album.release
         ).filter(
-            and_(
-                Album.artist_id == Artist.artist_id,
-                Album.album_id == album_id
-            )
+            Album.album_id == album_id
         ).one()
     )
 
-    # set genre
-    genres = ast.literal_eval(result["genres"])
-    result["genres"] = session.query(
-        Genre.category, Genre.name
-    ).filter(
-        Genre.genre_id.in_(genres)
-    ).all()
+    genres = dict(
+        session.query(
+            Genre.category, Genre.name
+        ).filter(
+            and_(
+                AlbumGenre.album_id == album_id,
+                AlbumGenre.genre_id == Genre.genre_id
+            )
+        ).all()
+    )
 
-    # set tracks
-    result["tracks"] = ast.literal_eval(result["tracks"])
+    result['genres'] = genres
+    result['tracks'] = ast.literal_eval(result['tracks'])
 
     return result
 
@@ -45,5 +53,42 @@ async def update_album():
 
 
 @router.put("")
-async def insert_album():
-    return
+async def insert_album(request: AlbumCreationRequest):
+    album = request.album.to()
+    genres = list(get_genre_id(genre.to()) for genre in request.genres)
+
+    session.insert(album)
+    session.refresh(album)
+
+    album_genres = []
+    for genre_id in genres:
+        album_genre = AlbumGenre(album_id=album.album_id, genre_id=genre_id)
+        album_genres.append(album_genre)
+
+    session.insert_all(album_genres)
+
+    return {
+        "success": True,
+        "album_id": album.album_id
+    }
+
+
+def get_genre_id(genre: Genre):
+    genre_id = -1
+
+    try:
+        result = session.query(
+            Genre.genre_id
+        ).filter(
+            and_(
+                Genre.category == genre.category,
+                Genre.name == genre.name
+            )
+        ).one()
+
+        return int(result.genre_id)
+
+    except NoResultFound:
+        session.insert(genre)
+        session.refresh(genre)
+        return int(genre.genre_id)

@@ -1,29 +1,31 @@
 -- release format = yyyy-MM-dd
 CREATE TABLE `moontomi`.`album` (
-  `album_id`  int          NOT NULL AUTO_INCREMENT,
-  `title`     varchar(250) NOT NULL,
-  `artist_id` int          NOT NULL,
-  `image_id`  varchar(32)  NOT NULL,
-  `tracks`    json         NOT NULL,
-  `release`   char(10)     NOT NULL,
-  PRIMARY KEY (`album_id`)
+  `album_id`       int          NOT NULL AUTO_INCREMENT,
+  `title`          varchar(250) NOT NULL,
+  `artist_id`      int          NOT NULL,
+  `image_id`       varchar(32)  NOT NULL,
+  `tracks`         json         NOT NULL,
+  `release`        char(10)     NOT NULL,
+  PRIMARY KEY (`album_id`),
+  UNIQUE KEY uk_title_artist (`title`, `artist_id`)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `moontomi`.`album_genre` (
-  `album_id` int NOT NULL,
-  `genre_id` int NOT NULL,
-  PRIMARY KEY (`album_id`, `genre_id`)
+    `album_id` int NOT NULL,
+    `genre_id` int NOT NULL,
+    PRIMARY KEY (`album_id`, `genre_id`)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `moontomi`.`genre` (
-  `genre_id` int         NOT NULL AUTO_INCREMENT,
-  `category` varchar(20) NOT NULL,
-  `name`     varchar(50) NOT NULL,
-  PRIMARY KEY (`genre_id`)
+    `genre_id` int NOT NULL AUTO_INCREMENT,
+    `category` varchar(50) NOT NULL,
+    `name`     varchar(50) NOT NULL,
+    PRIMARY KEY (`genre_id`),
+    UNIQUE KEY uk_category_name (`category`, `name`)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_0900_ai_ci;
@@ -50,28 +52,34 @@ CREATE TABLE `moontomi`.`lecture` (
   `rating`     int      DEFAULT NULL,
   `date`       char(10) DEFAULT NULL,
   `season_id`  int      NOT NULL,
-  PRIMARY KEY (`lecture_id`)
+  PRIMARY KEY (`lecture_id`),
+  UNIQUE KEY uk_album_id (`album_id`)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_0900_ai_ci;
 
+-- 몇 번째 comment 인지 알기 쉽게 comment_id를 별도로 둔다
+-- (매번 created_at sort 하기엔 리소스 소모가 크다.)
 CREATE TABLE `moontomi`.`comment` (
+  `comment_id`  int          NOT NULL AUTO_INCREMENT,
   `lecture_id`  int          NOT NULL,
   `writer`      varchar(50)  NOT NULL,
   `password`    varchar(50)  NOT NULL,
   `picks`       json         NOT NULL,
   `text`        varchar(500) NOT NULL,
   `created_at`  datetime     DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`lecture_id`, `writer`)
+  PRIMARY KEY (`comment_id`),
+  UNIQUE KEY uk_lecture_writer (`lecture_id`, `writer`)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `moontomi`.`season` (
-  `season_id` int         NOT NULL,
+  `season_id` int         NOT NULL AUTO_INCREMENT,
   `name`      varchar(50) NOT NULL,
   `image_id`  varchar(32) NOT NULL,
-  PRIMARY KEY (`season_id`)
+  PRIMARY KEY (`season_id`),
+  UNIQUE KEY uk_name (`name`)
 ) ENGINE=InnoDB
   DEFAULT CHARSET=utf8mb4
   COLLATE=utf8mb4_0900_ai_ci;

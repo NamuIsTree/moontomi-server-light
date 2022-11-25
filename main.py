@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
-from routers import album, comment, image, lecture
+from routers import album, comment, image, lecture, genre
 import config.database as db
 
 app = FastAPI()
@@ -8,6 +8,7 @@ app.include_router(album.router)
 app.include_router(comment.router)
 app.include_router(image.router)
 app.include_router(lecture.router)
+app.include_router(genre.router)
 
 # database setup
 db.Base.metadata.create_all(bind=db.engine)
