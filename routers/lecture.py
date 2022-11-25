@@ -1,7 +1,7 @@
 import ast
 
 from fastapi import APIRouter, Response
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 from sqlalchemy.exc import NoResultFound
 
 from config.database import session
@@ -24,9 +24,10 @@ async def search_lectures(page: int, page_size: int, sort_by: str, sort_option: 
     query = session.query(
         Lecture.lecture_id, Album.title, Album.image_id, Artist.name, Artist.nation
     ).filter(
-        Lecture.album_id == Album.album_id
-    ).filter(
-        Album.artist_id == Artist.artist_id
+        and_(
+            Lecture.album_id == Album.album_id,
+            Album.artist_id == Artist.artist_id
+        )
     )
 
     if sort_by == 'id':
@@ -55,11 +56,11 @@ async def get_lecture(lecture_id: int):
         result = session.query(
             Lecture, Album, Artist
         ).filter(
-            Lecture.lecture_id == lecture_id
-        ).filter(
-            Lecture.album_id == Album.album_id
-        ).filter(
-            Album.artist_id == Artist.artist_id
+            and_(
+                Lecture.lecture_id == lecture_id,
+                Lecture.album_id == Album.album_id,
+                Album.artist_id == Artist.artist_id
+            )
         ).one()
 
         lecture = result["Lecture"]
